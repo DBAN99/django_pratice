@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
+{% load pybo_filter %}
 {% block content %}
 
 <div class="container my-3">
     <table class="table">
-
         <thead>
         <tr class="thead-dark">
             <th>번호</th>
@@ -13,19 +13,18 @@
         </thead>
 
         <tbody>
-        <!-- question_list가 있다면 (question_list는 render 함수로 전달받은 "질문 목록" 데이터이다.)-->
         {% if question_list %}
-
-        <!-- question_list를 반복하며 순차적으로 하나씩 question에 대입-->
         {% for question in question_list %}
-
         <tr>
-            <td>{{ forloop.counter }}</td>
             <td>
-                <!--for문에 의해 대입된 question 객체의 id 번호를 출력 / for문에 의해 대입된 question 객체의 제목을 출력 -->
+                <!-- 번호 = 전체건수 - 시작인덱스 - 현재인덱스 + 1 -->
+                {{ question_list.paginator.count|sub:question_list.start_index|sub:forloop.counter0|add:1 }}
+            </td>
+            <td>
                 <a href="{% url 'pybo:detail' question.id %}">{{ question.subject }}</a>
             </td>
             <td>{{ question.create_date }}</td>
+
         </tr>
 
         {% endfor %}
@@ -34,7 +33,6 @@
             <td colspan="3">질문이 없습니다.</td>
         </tr>
         {% endif %}
-
         </tbody>
 
     </table>
