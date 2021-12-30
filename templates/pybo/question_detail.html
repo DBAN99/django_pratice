@@ -1,21 +1,27 @@
 {% extends 'base.html' %}
+{% load pybo_filter %}
 {% block content %}
 <div class="container my-3">
+    <!-- 사용자오류 표시 -->
+    {% if messages %}
+    <div class="alert alert-danger my-3" role="alert">
+    {% for message in messages %}
+        <strong>{{ message.tags }}</strong>
+        <ul><li>{{ message.message }}</li></ul>
+    {% endfor %}
+    </div>
+    {% endif %}
     <h2 class="border-bottom py-2">{{ question.subject }}</h2>
-
     <div class="row my-3">
         <div class="col-1"> <!-- 추천영역 -->
             <div class="bg-light text-center p-3 border font-weight-bolder mb-1">{{question.voter.count}}</div>
             <a href="#" data-uri="{% url 'pybo:vote_question' question.id  %}"
                class="recommend btn btn-sm btn-secondary btn-block my-1">추천</a>
         </div>
-
         <div class="col-11"> <!-- 질문영역 -->
-            <!-- 기존내용 -->
             <div class="card">
                 <div class="card-body">
-                    <div class="card-text" style="white-space: pre-line;">{{ question.content }}</div>
-
+                    <div class="card-text">{{ question.content|mark }}</div>
                     <div class="d-flex justify-content-end">
                         {% if question.modify_date %}
                         <div class="badge badge-light p-2 text-left mx-3">
@@ -28,7 +34,6 @@
                             <div>{{ question.create_date }}</div>
                         </div>
                     </div>
-
                     {% if request.user == question.author %}
                     <div class="my-3">
                         <a href="{% url 'pybo:question_modify' question.id  %}"
@@ -40,8 +45,9 @@
                     <!-- 질문 댓글 Start -->
                     {% if question.comment_set.count > 0 %}
                     <div class="mt-3">
-                    {% for comment in question.comment_set.all %}  <!-- 등록한 댓글을 출력 -->
-                        <div class="comment py-2 text-muted">  <!-- 댓글 각각에 comment 스타일 지정 -->
+                    {% for comment in question.comment_set.all %}
+                        <a name="comment_{{ comment.id }}"></a>
+                        <div class="comment py-2 text-muted">
                             <span style="white-space: pre-line;">{{ comment.content }}</span>
                             <span>
                                 - {{ comment.author }}, {{ comment.create_date }}
@@ -60,29 +66,26 @@
                     {% endif %}
                     <div>
                         <a href="{% url 'pybo:comment_create_question' question.id  %}"
-                           class="small"><small>댓글 추가 ..</small></a>  <!-- 댓글 추가 링크 -->
+                           class="small"><small>댓글 추가 ..</small></a>
                     </div>
                     <!-- 질문 댓글 End -->
                 </div>
             </div>
         </div>
     </div>
-
     <h5 class="border-bottom my-3 py-2">{{question.answer_set.count}}개의 답변이 있습니다.</h5>
     {% for answer in question.answer_set.all %}
+    <a name="answer_{{ answer.id }}"></a>
     <div class="row my-3">
-    <div class="col-1">  <!-- 추천영역 -->
-        <div class="bg-light text-center p-3 border font-weight-bolder mb-1">{{answer.voter.count}}</div>
-        <a href="#" data-uri="{% url 'pybo:vote_answer' answer.id  %}"
-            class="recommend btn btn-sm btn-secondary btn-block my-1">추천</a>
-    </div>
-    <div class="col-11">  <!-- 답변영역 -->
-        <!-- 기존내용 -->
-
+        <div class="col-1">  <!-- 추천영역 -->
+            <div class="bg-light text-center p-3 border font-weight-bolder mb-1">{{answer.voter.count}}</div>
+            <a href="#" data-uri="{% url 'pybo:vote_answer' answer.id  %}"
+                class="recommend btn btn-sm btn-secondary btn-block my-1">추천</a>
+        </div>
+        <div class="col-11">  <!-- 답변영역 -->
             <div class="card">
-
                 <div class="card-body">
-                    <div class="card-text" style="white-space: pre-line;">{{ answer.content }}</div>
+                    <div class="card-text">{{ answer.content|mark }}</div>
                     <div class="d-flex justify-content-end">
                         {% if answer.modify_date %}
                         <div class="badge badge-light p-2 text-left mx-3">
@@ -106,6 +109,7 @@
                     {% if answer.comment_set.count > 0 %}
                     <div class="mt-3">
                     {% for comment in answer.comment_set.all %}
+                        <a name="comment_{{ comment.id }}"></a>
                         <div class="comment py-2 text-muted">
                             <span style="white-space: pre-line;">{{ comment.content }}</span>
                             <span>
@@ -127,12 +131,10 @@
                         <a href="{% url 'pybo:comment_create_answer' answer.id  %}"
                            class="small"><small>댓글 추가 ..</small></a>
                     </div>
-
-                    </div>
+                </div>
             </div>
         </div>
     </div>
-
     {% endfor %}
     <form action="{% url 'pybo:answer_create' question.id %}" method="post" class="my-3">
         {% csrf_token %}
@@ -163,13 +165,11 @@ $(document).ready(function(){
             location.href = $(this).data('uri');
         }
     });
-
     $(".recommend").on('click', function() {
         if(confirm("정말로 추천하시겠습니까?")) {
             location.href = $(this).data('uri');
         }
     });
-
 });
 </script>
 {% endblock %}
