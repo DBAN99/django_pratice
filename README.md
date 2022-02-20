@@ -1,1 +1,1 @@
-# Ninja_API
+# Django-Ninja-Project
